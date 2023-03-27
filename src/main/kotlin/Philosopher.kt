@@ -35,6 +35,7 @@ class Philosopher(private val name: String) {
         else if (hand == Hand.Right && rightHand == Status.Empty) {
             rightHand = Status.Fork
         }
+        println("$name took ${hand.name} fork")
         delay(1000)
     }
 
@@ -46,6 +47,7 @@ class Philosopher(private val name: String) {
         else if (hand == Hand.Right && rightHand == Status.Fork) {
             rightHand = Status.Empty
         }
+        println("$name put ${hand.name} fork")
         delay(1000)
     }
 }

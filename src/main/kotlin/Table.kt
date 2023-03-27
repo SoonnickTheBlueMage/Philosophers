@@ -38,31 +38,57 @@ class Table(private val size: Int) {
         forks[(index + 1) % size].set(true)
         philosophers[index].putFork(Hand.Right)
     }
-
-    private suspend fun dinnerIteration(i: Int, naive: Boolean) {
+    private suspend fun waitLeftForkFree(index: Int): Boolean {
         var waitingTime = 0
+        while (!getLeftFork(index)) {
+            philosophers[index].think()
+            waitingTime++
+            if (waitingTime > 200 * size) return false
+        }
+        return true
+    }
+    private suspend fun waitRightForkFree(index: Int): Boolean {
+        var waitingTime = 0
+        while (!getRightFork(index)) {
+            philosophers[index].think()
+            waitingTime++
+            if (waitingTime > 5) {
+                return false
+            }
+        }
+        return true
+    }
+    private suspend fun waitForWaitersPermission(index: Int) {
+        while (forks.count { it.get() } < 2) {
+            philosophers[index].think()
+        }
+    }
 
-        if (naive)  {
-            while (!getLeftFork(i)) {
-                philosophers[i].think()
-                waitingTime++
-                if (waitingTime > 100) return
+    private suspend fun dinnerIteration(i: Int, workTimes: Int, naive: Boolean) {
+        for (count in 1..workTimes) {
+            if(!waitLeftForkFree(i)) {
+                return
             }
+
+            if (!naive) waitForWaitersPermission(i)
             takeLeftFork(i)
-            while (!getRightFork(i)) {
-                philosophers[i].think()
-                waitingTime++
-                if (waitingTime > 100) return
+
+            if (!waitRightForkFree(i)) {
+                putLeftFork(i)
+                continue
             }
+
+            if (!naive) waitForWaitersPermission(i)
             takeRightFork(i)
+
             philosophers[i].eat()
             putLeftFork(i)
             putRightFork(i)
         }
     }
 
-    suspend fun run(naive: Boolean = true) = coroutineScope {
+    suspend fun run(workTimes: Int, naive: Boolean = true) = coroutineScope {
         for (i in philosophers.indices)
-            launch { dinnerIteration(i, naive) }
+            launch { dinnerIteration(i, workTimes, naive) }
     }
 }
