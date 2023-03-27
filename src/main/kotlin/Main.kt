@@ -1,8 +1,7 @@
-fun main(args: Array<String>)
-{
-    println("Hello World!")
+import kotlinx.coroutines.runBlocking
 
-    // Try adding program arguments via Run/Debug configuration.
-    // Learn more about running applications: https://www.jetbrains.com/help/idea/running-applications.html.
-    println("Program arguments: ${args.joinToString()}")
+fun main() = runBlocking {
+    val table = Table(5)
+    table.run()
+    println("${table.checkEveryoneAte()}")
 }
